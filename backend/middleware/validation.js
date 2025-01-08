@@ -45,6 +45,8 @@ exports.validateExamination = (req, res, next) => {
     // Validate patient_id
     if (!patient_id) {
         errors.push('Patient ID is required');
+    } else if (isNaN(parseInt(patient_id))) {
+        errors.push('Patient ID must be a number');
     }
 
     // Validate date
@@ -63,6 +65,8 @@ exports.validateExamination = (req, res, next) => {
     // Validate diagnosis
     if (!diagnosis || diagnosis.trim().length === 0) {
         errors.push('Diagnosis is required');
+    } else if (diagnosis.length > 500) {
+        errors.push('Diagnosis must be less than 500 characters');
     }
 
     if (errors.length > 0) {
@@ -106,4 +110,3 @@ exports.validateUser = (req, res, next) => {
 
     next();
 };
-

@@ -29,9 +29,12 @@ router.get('/:id', (req, res) => {
 
 // Create a new patient
 router.post('/', (req, res) => {
-    const { first_name, last_name, dob, gender, email, phone, address } = req.body;
-    const query = 'INSERT INTO patients (first_name, last_name, dob, gender, email, phone, address) VALUES (?, ?, ?, ?, ?, ?, ?)';
-    db.query(query, [first_name, last_name, dob, gender, email, phone, address], (error, result) => {
+    const { name, dob, gender } = req.body;
+    if (!name || !dob || !gender) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+    const query = 'INSERT INTO patients (name, dob, gender) VALUES (?, ?, ?)';
+    db.query(query, [name, dob, gender], (error, result) => {
         if (error) {
             return res.status(500).json({ error: 'Database error' });
         }
@@ -41,9 +44,12 @@ router.post('/', (req, res) => {
 
 // Update a patient
 router.put('/:id', (req, res) => {
-    const { first_name, last_name, dob, gender, email, phone, address } = req.body;
-    const query = 'UPDATE patients SET first_name = ?, last_name = ?, dob = ?, gender = ?, email = ?, phone = ?, address = ? WHERE id = ?';
-    db.query(query, [first_name, last_name, dob, gender, email, phone, address, req.params.id], (error, result) => {
+    const { name, dob, gender } = req.body;
+    if (!name || !dob || !gender) {
+        return res.status(400).json({ error: 'Missing required fields' });
+    }
+    const query = 'UPDATE patients SET name = ?, dob = ?, gender = ? WHERE id = ?';
+    db.query(query, [name, dob, gender, req.params.id], (error, result) => {
         if (error) {
             return res.status(500).json({ error: 'Database error' });
         }
@@ -69,4 +75,3 @@ router.delete('/:id', (req, res) => {
 });
 
 module.exports = router;
-
