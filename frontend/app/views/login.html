@@ -1,0 +1,54 @@
+<!-- frontend/app/views/login.html -->
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-primary text-white">
+                    <h2>Login</h2>
+                </div>
+                <div class="card-body">
+                    <!-- Perhatikan ng-submit untuk menangani submit form -->
+                    <form ng-submit="login()">
+                        <!-- Username field -->
+                        <div class="form-group mb-3">
+                            <label for="username">Username:</label>
+                            <input 
+                                type="text" 
+                                class="form-control" 
+                                id="username" 
+                                ng-model="user.username"
+                                required
+                            >
+                        </div>
+                        
+                        <!-- Password field -->
+                        <div class="form-group mb-3">
+                            <label for="password">Password:</label>
+                            <input 
+                                type="password" 
+                                class="form-control" 
+                                id="password" 
+                                ng-model="user.password"
+                                required
+                            >
+                        </div>
+
+                        <!-- Error message -->
+                        <div class="alert alert-danger" ng-if="error">
+                            {{error}}
+                        </div>
+
+                        <!-- Submit button -->
+                        <button type="submit" class="btn btn-primary w-100">
+                            <span ng-if="!isLoading">Login</span>
+                            <span ng-if="isLoading">
+                                <span class="spinner-border spinner-border-sm"></span>
+                                Loading...
+                            </span>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

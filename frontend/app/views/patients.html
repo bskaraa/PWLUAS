@@ -1,0 +1,174 @@
+<div class="container mt-4">
+  <h1 class="mb-4">Patients</h1>
+  <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addPatientModal">Add New Patient</button>
+  
+  <!-- Alert for errors -->
+  <div ng-if="error" class="alert alert-danger" role="alert">
+      {{error}}
+  </div>
+
+  <!-- Loading spinner -->
+  <div ng-if="loading" class="text-center">
+      <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading...</span>
+      </div>
+  </div>
+
+  <table class="table table-striped" ng-if="!loading">
+      <thead>
+          <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Date of Birth</th>
+              <th>Gender</th>
+              <th>Actions</th>
+          </tr>
+      </thead>
+      <tbody>
+          <tr ng-repeat="patient in patients">
+              <td>{{patient.id}}</td>
+              <td>{{patient.name}}</td>
+              <td>{{patient.dob | date:'yyyy-MM-dd'}}</td>
+              <td>{{patient.gender}}</td>
+              <td>
+                  <button class="btn btn-sm btn-info" ng-click="editPatient(patient)">Edit</button>
+                  <button class="btn btn-sm btn-danger" ng-click="deletePatient(patient.id)">Delete</button>
+              </td>
+          </tr>
+          <tr ng-if="patients.length === 0">
+              <td colspan="5" class="text-center">No patients found</td>
+          </tr>
+      </tbody>
+  </table>
+
+  <!-- Add Patient Modal -->
+  <div class="modal fade" id="addPatientModal" tabindex="-1">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title">Add New Patient</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                  <form name="addPatientForm" ng-submit="addPatient(addPatientForm)" novalidate>
+                      <div class="mb-3">
+                          <label for="name" class="form-label">Name</label>
+                          <input type="text" 
+                                 class="form-control" 
+                                 id="name" 
+                                 name="name"
+                                 ng-model="newPatient.name" 
+                                 required>
+                          <div class="text-danger" ng-show="addPatientForm.name.$dirty && addPatientForm.name.$invalid">
+                              <small ng-show="addPatientForm.name.$error.required">Name is required.</small>
+                          </div>
+                      </div>
+                      <div class="mb-3">
+                          <label for="dob" class="form-label">Date of Birth</label>
+                          <input type="date" 
+                                 class="form-control" 
+                                 id="dob" 
+                                 name="dob"
+                                 ng-model="newPatient.dob" 
+                                 required>
+                          <div class="text-danger" ng-show="addPatientForm.dob.$dirty && addPatientForm.dob.$invalid">
+                              <small ng-show="addPatientForm.dob.$error.required">Date of Birth is required.</small>
+                          </div>
+                      </div>
+                      <div class="mb-3">
+                          <label for="gender" class="form-label">Gender</label>
+                          <select class="form-select"
+                                  id="gender"
+                                  name="gender"
+                                  ng-model="newPatient.gender"
+                                  required>
+                              <option ng-repeat="option in genderOptions" 
+                                      value="{{option.value}}">
+                                  {{option.label}}
+                              </option>
+                          </select>
+                          <div class="text-danger" ng-show="addPatientForm.gender.$dirty && addPatientForm.gender.$invalid">
+                              <small ng-show="addPatientForm.gender.$error.required">Gender is required.</small>
+                          </div>
+                      </div>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          <button type="submit" 
+                                  class="btn btn-primary" 
+                                  ng-disabled="addPatientForm.$invalid || loading">
+                              <span ng-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                              Add Patient
+                          </button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      </div>
+  </div>
+
+  <!-- Edit Patient Modal -->
+  <div class="modal fade" id="editPatientModal" tabindex="-1">
+      <div class="modal-dialog">
+          <div class="modal-content">
+              <div class="modal-header">
+                  <h5 class="modal-title">Edit Patient</h5>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+              </div>
+              <div class="modal-body">
+                  <form name="editPatientForm" ng-submit="updatePatient(editPatientForm)" novalidate>
+                      <div class="mb-3">
+                          <label for="editName" class="form-label">Name</label>
+                          <input type="text" 
+                                 class="form-control" 
+                                 id="editName" 
+                                 name="name"
+                                 ng-model="editingPatient.name" 
+                                 required>
+                          <div class="text-danger" ng-show="editPatientForm.name.$dirty && editPatientForm.name.$invalid">
+                              <small ng-show="editPatientForm.name.$error.required">Name is required.</small>
+                          </div>
+                      </div>
+                      <div class="mb-3">
+                          <label for="editDob" class="form-label">Date of Birth</label>
+                          <input type="date" 
+                                 class="form-control" 
+                                 id="editDob" 
+                                 name="dob"
+                                 ng-model="editingPatient.dob" 
+                                 required>
+                          <div class="text-danger" ng-show="editPatientForm.dob.$dirty && editPatientForm.dob.$invalid">
+                              <small ng-show="editPatientForm.dob.$error.required">Date of Birth is required.</small>
+                          </div>
+                      </div>
+                      <div class="mb-3">
+                          <label for="editGender" class="form-label">Gender</label>
+                          <select class="form-select"
+                                  id="editGender"
+                                  name="gender"
+                                  ng-model="editingPatient.gender"
+                                  required>
+                              <option ng-repeat="option in genderOptions" 
+                                      value="{{option.value}}">
+                                  {{option.label}}
+                              </option>
+                          </select>
+                          <div class="text-danger" ng-show="editPatientForm.gender.$dirty && editPatientForm.gender.$invalid">
+                              <small ng-show="editPatientForm.gender.$error.required">Gender is required.</small>
+                          </div>
+                      </div>
+                      <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                          <button type="submit" 
+                                  class="btn btn-primary" 
+                                  ng-disabled="editPatientForm.$invalid || loading">
+                              <span ng-if="loading" class="spinner-border spinner-border-sm me-1"></span>
+                              Update Patient
+                          </button>
+                      </div>
+                  </form>
+              </div>
+          </div>
+      </div>
+  </div>
+</div>
+
