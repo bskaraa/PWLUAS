@@ -1,174 +1,424 @@
-<div class="container mt-4">
-  <h1 class="mb-4">Patients</h1>
-  <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addPatientModal">Add New Patient</button>
-  
-  <!-- Alert for errors -->
-  <div ng-if="error" class="alert alert-danger" role="alert">
-      {{error}}
-  </div>
+<!DOCTYPE html>
+<html lang="en" ng-app="patientApp">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Patient Management System</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.8.2/angular.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --accent-color: #e74c3c;
+            --background-color: #ecf0f1;
+            --text-color: #34495e;
+            --card-bg: #ffffff;
+            --nav-bg: #2c3e50;
+        }
 
-  <!-- Loading spinner -->
-  <div ng-if="loading" class="text-center">
-      <div class="spinner-border text-primary" role="status">
-          <span class="visually-hidden">Loading...</span>
-      </div>
-  </div>
+        body {
+            font-family: 'Roboto', sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 0;
+            line-height: 1.6;
+        }
 
-  <table class="table table-striped" ng-if="!loading">
-      <thead>
-          <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Date of Birth</th>
-              <th>Gender</th>
-              <th>Actions</th>
-          </tr>
-      </thead>
-      <tbody>
-          <tr ng-repeat="patient in patients">
-              <td>{{patient.id}}</td>
-              <td>{{patient.name}}</td>
-              <td>{{patient.dob | date:'yyyy-MM-dd'}}</td>
-              <td>{{patient.gender}}</td>
-              <td>
-                  <button class="btn btn-sm btn-info" ng-click="editPatient(patient)">Edit</button>
-                  <button class="btn btn-sm btn-danger" ng-click="deletePatient(patient.id)">Delete</button>
-              </td>
-          </tr>
-          <tr ng-if="patients.length === 0">
-              <td colspan="5" class="text-center">No patients found</td>
-          </tr>
-      </tbody>
-  </table>
+        .navbar {
+            background-color: var(--nav-bg);
+            padding: 1rem 2rem;
+            color: white;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-  <!-- Add Patient Modal -->
-  <div class="modal fade" id="addPatientModal" tabindex="-1">
-      <div class="modal-dialog">
-          <div class="modal-content">
-              <div class="modal-header">
-                  <h5 class="modal-title">Add New Patient</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-              <div class="modal-body">
-                  <form name="addPatientForm" ng-submit="addPatient(addPatientForm)" novalidate>
-                      <div class="mb-3">
-                          <label for="name" class="form-label">Name</label>
-                          <input type="text" 
-                                 class="form-control" 
-                                 id="name" 
-                                 name="name"
-                                 ng-model="newPatient.name" 
-                                 required>
-                          <div class="text-danger" ng-show="addPatientForm.name.$dirty && addPatientForm.name.$invalid">
-                              <small ng-show="addPatientForm.name.$error.required">Name is required.</small>
-                          </div>
-                      </div>
-                      <div class="mb-3">
-                          <label for="dob" class="form-label">Date of Birth</label>
-                          <input type="date" 
-                                 class="form-control" 
-                                 id="dob" 
-                                 name="dob"
-                                 ng-model="newPatient.dob" 
-                                 required>
-                          <div class="text-danger" ng-show="addPatientForm.dob.$dirty && addPatientForm.dob.$invalid">
-                              <small ng-show="addPatientForm.dob.$error.required">Date of Birth is required.</small>
-                          </div>
-                      </div>
-                      <div class="mb-3">
-                          <label for="gender" class="form-label">Gender</label>
-                          <select class="form-select"
-                                  id="gender"
-                                  name="gender"
-                                  ng-model="newPatient.gender"
-                                  required>
-                              <option ng-repeat="option in genderOptions" 
-                                      value="{{option.value}}">
-                                  {{option.label}}
-                              </option>
-                          </select>
-                          <div class="text-danger" ng-show="addPatientForm.gender.$dirty && addPatientForm.gender.$invalid">
-                              <small ng-show="addPatientForm.gender.$error.required">Gender is required.</small>
-                          </div>
-                      </div>
-                      <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                          <button type="submit" 
-                                  class="btn btn-primary" 
-                                  ng-disabled="addPatientForm.$invalid || loading">
-                              <span ng-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                              Add Patient
-                          </button>
-                      </div>
-                  </form>
-              </div>
-          </div>
-      </div>
-  </div>
+        .navbar h1 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
 
-  <!-- Edit Patient Modal -->
-  <div class="modal fade" id="editPatientModal" tabindex="-1">
-      <div class="modal-dialog">
-          <div class="modal-content">
-              <div class="modal-header">
-                  <h5 class="modal-title">Edit Patient</h5>
-                  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-              </div>
-              <div class="modal-body">
-                  <form name="editPatientForm" ng-submit="updatePatient(editPatientForm)" novalidate>
-                      <div class="mb-3">
-                          <label for="editName" class="form-label">Name</label>
-                          <input type="text" 
-                                 class="form-control" 
-                                 id="editName" 
-                                 name="name"
-                                 ng-model="editingPatient.name" 
-                                 required>
-                          <div class="text-danger" ng-show="editPatientForm.name.$dirty && editPatientForm.name.$invalid">
-                              <small ng-show="editPatientForm.name.$error.required">Name is required.</small>
-                          </div>
-                      </div>
-                      <div class="mb-3">
-                          <label for="editDob" class="form-label">Date of Birth</label>
-                          <input type="date" 
-                                 class="form-control" 
-                                 id="editDob" 
-                                 name="dob"
-                                 ng-model="editingPatient.dob" 
-                                 required>
-                          <div class="text-danger" ng-show="editPatientForm.dob.$dirty && editPatientForm.dob.$invalid">
-                              <small ng-show="editPatientForm.dob.$error.required">Date of Birth is required.</small>
-                          </div>
-                      </div>
-                      <div class="mb-3">
-                          <label for="editGender" class="form-label">Gender</label>
-                          <select class="form-select"
-                                  id="editGender"
-                                  name="gender"
-                                  ng-model="editingPatient.gender"
-                                  required>
-                              <option ng-repeat="option in genderOptions" 
-                                      value="{{option.value}}">
-                                  {{option.label}}
-                              </option>
-                          </select>
-                          <div class="text-danger" ng-show="editPatientForm.gender.$dirty && editPatientForm.gender.$invalid">
-                              <small ng-show="editPatientForm.gender.$error.required">Gender is required.</small>
-                          </div>
-                      </div>
-                      <div class="modal-footer">
-                          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                          <button type="submit" 
-                                  class="btn btn-primary" 
-                                  ng-disabled="editPatientForm.$invalid || loading">
-                              <span ng-if="loading" class="spinner-border spinner-border-sm me-1"></span>
-                              Update Patient
-                          </button>
-                      </div>
-                  </form>
-              </div>
-          </div>
-      </div>
-  </div>
-</div>
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
 
+        .btn {
+            padding: 0.5rem 1rem;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary {
+            background-color: var(--primary-color);
+            color: white;
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-danger {
+            background-color: var(--accent-color);
+            color: white;
+        }
+
+        .btn:hover {
+            opacity: 0.9;
+            transform: translateY(-2px);
+        }
+
+        .patient-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .patient-card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .patient-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .patient-card-header {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 1rem;
+            font-weight: 500;
+        }
+
+        .patient-card-body {
+            padding: 1rem;
+        }
+
+        .patient-card-footer {
+            padding: 1rem;
+            display: flex;
+            justify-content: flex-end;
+            gap: 0.5rem;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+        }
+
+        .modal-content {
+            background-color: var(--card-bg);
+            margin: 10% auto;
+            padding: 2rem;
+            border-radius: 8px;
+            width: 80%;
+            max-width: 500px;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+
+        .error {
+            color: var(--accent-color);
+            font-size: 0.875rem;
+            margin-top: 0.25rem;
+        }
+
+        .spinner {
+            border: 4px solid rgba(0, 0, 0, 0.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem;
+            margin-bottom: 1rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .alert-danger {
+            background-color: #fde8e8;
+            color: #9b1c1c;
+            border: 1px solid #f8b4b4;
+        }
+
+        @media (max-width: 768px) {
+            .patient-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body ng-controller="PatientController">
+    <nav class="navbar">
+        <h1>Patient Management System</h1>
+        <button class="btn btn-primary" ng-click="openAddModal()">
+            <i class="fas fa-user-plus"></i> Add New Patient
+        </button>
+    </nav>
+
+    <div class="container">
+        <div ng-if="error" class="alert alert-danger" role="alert">
+            <i class="fas fa-exclamation-circle"></i> {{error}}
+        </div>
+
+        <div ng-if="loading" class="spinner"></div>
+
+        <div class="patient-grid" ng-if="!loading">
+            <div class="patient-card" ng-repeat="patient in patients">
+                <div class="patient-card-header">
+                    <i class="fas fa-user-circle"></i> Patient ID: {{patient.id}}
+                </div>
+                <div class="patient-card-body">
+                    <p><strong><i class="fas fa-user"></i> Name:</strong> {{patient.name}}</p>
+                    <p><strong><i class="fas fa-calendar-alt"></i> Date of Birth:</strong> {{patient.dob | date:'yyyy-MM-dd'}}</p>
+                    <p><strong><i class="fas fa-venus-mars"></i> Gender:</strong> {{patient.gender}}</p>
+                </div>
+                <div class="patient-card-footer">
+                    <button class="btn btn-secondary" ng-click="openEditModal(patient)">
+                        <i class="fas fa-edit"></i> Edit
+                    </button>
+                    <button class="btn btn-danger" ng-click="deletePatient(patient.id)">
+                        <i class="fas fa-trash-alt"></i> Delete
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Add Patient Modal -->
+        <div id="addPatientModal" class="modal" ng-style="{'display': showAddModal ? 'block' : 'none'}">
+            <div class="modal-content">
+                <span class="close" ng-click="closeAddModal()">&times;</span>
+                <h2><i class="fas fa-user-plus"></i> Add New Patient</h2>
+                <form name="addPatientForm" ng-submit="addPatient(addPatientForm)" novalidate>
+                    <div class="form-group">
+                        <label for="name"><i class="fas fa-user"></i> Name</label>
+                        <input type="text" id="name" name="name" ng-model="newPatient.name" required>
+                        <span class="error" ng-show="addPatientForm.name.$dirty && addPatientForm.name.$invalid">
+                            <i class="fas fa-exclamation-circle"></i> Name is required.
+                        </span>
+                    </div>
+                    <div class="form-group">
+                        <label for="dob"><i class="fas fa-calendar-alt"></i> Date of Birth</label>
+                        <input type="date" id="dob" name="dob" ng-model="newPatient.dob" required>
+                        <span class="error" ng-show="addPatientForm.dob.$dirty && addPatientForm.dob.$invalid">
+                            <i class="fas fa-exclamation-circle"></i> Date of Birth is required.
+                        </span>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender"><i class="fas fa-venus-mars"></i> Gender</label>
+                        <select id="gender" name="gender" ng-model="newPatient.gender" required>
+                            <option ng-repeat="option in genderOptions" value="{{option.value}}">
+                                {{option.label}}
+                            </option>
+                        </select>
+                        <span class="error" ng-show="addPatientForm.gender.$dirty && addPatientForm.gender.$invalid">
+                            <i class="fas fa-exclamation-circle"></i> Gender is required.
+                        </span>
+                    </div>
+                    <button type="submit" class="btn btn-primary" ng-disabled="addPatientForm.$invalid || loading">
+                        <i class="fas fa-save"></i> Add Patient
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Edit Patient Modal -->
+        <div id="editPatientModal" class="modal" ng-style="{'display': showEditModal ? 'block' : 'none'}">
+            <div class="modal-content">
+                <span class="close" ng-click="closeEditModal()">&times;</span>
+                <h2><i class="fas fa-user-edit"></i> Edit Patient</h2>
+                <form name="editPatientForm" ng-submit="updatePatient(editPatientForm)" novalidate>
+                    <div class="form-group">
+                        <label for="editName"><i class="fas fa-user"></i> Name</label>
+                        <input type="text" id="editName" name="name" ng-model="editingPatient.name" required>
+                        <span class="error" ng-show="editPatientForm.name.$dirty && editPatientForm.name.$invalid">
+                            <i class="fas fa-exclamation-circle"></i> Name is required.
+                        </span>
+                    </div>
+                    <div class="form-group">
+                        <label for="editDob"><i class="fas fa-calendar-alt"></i> Date of Birth</label>
+                        <input type="date" id="editDob" name="dob" ng-model="editingPatient.dob" required>
+                        <span class="error" ng-show="editPatientForm.dob.$dirty && editPatientForm.dob.$invalid">
+                            <i class="fas fa-exclamation-circle"></i> Date of Birth is required.
+                        </span>
+                    </div>
+                    <div class="form-group">
+                        <label for="editGender"><i class="fas fa-venus-mars"></i> Gender</label>
+                        <select id="editGender" name="gender" ng-model="editingPatient.gender" required>
+                            <option ng-repeat="option in genderOptions" value="{{option.value}}">
+                                {{option.label}}
+                            </option>
+                        </select>
+                        <span class="error" ng-show="editPatientForm.gender.$dirty && editPatientForm.gender.$invalid">
+                            <i class="fas fa-exclamation-circle"></i> Gender is required.
+                        </span>
+                    </div>
+                    <button type="submit" class="btn btn-primary" ng-disabled="editPatientForm.$invalid || loading">
+                        <i class="fas fa-save"></i> Update Patient
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        angular.module('patientApp', [])
+            .controller('PatientController', function($scope, $http) {
+                $scope.patients = [];
+                $scope.newPatient = {};
+                $scope.editingPatient = {};
+                $scope.loading = false;
+                $scope.error = null;
+                $scope.showAddModal = false;
+                $scope.showEditModal = false;
+
+                $scope.genderOptions = [
+                    { value: 'male', label: 'Male' },
+                    { value: 'female', label: 'Female' },
+                    { value: 'other', label: 'Other' }
+                ];
+
+                $scope.fetchPatients = function() {
+                    $scope.loading = true;
+                    $http.get('/api/patients')
+                        .then(function(response) {
+                            $scope.patients = response.data;
+                            $scope.loading = false;
+                        })
+                        .catch(function(error) {
+                            $scope.error = 'Error fetching patients: ' + error.message;
+                            $scope.loading = false;
+                        });
+                };
+
+                $scope.addPatient = function(form) {
+                    if (form.$valid) {
+                        $scope.loading = true;
+                        $http.post('/api/patients', $scope.newPatient)
+                            .then(function(response) {
+                                $scope.patients.push(response.data);
+                                $scope.newPatient = {};
+                                $scope.loading = false;
+                                $scope.closeAddModal();
+                            })
+                            .catch(function(error) {
+                                $scope.error = 'Error adding patient: ' + error.message;
+                                $scope.loading = false;
+                            });
+                    }
+                };
+
+                $scope.updatePatient = function(form) {
+                    if (form.$valid) {
+                        $scope.loading = true;
+                        $http.put('/api/patients/' + $scope.editingPatient.id, $scope.editingPatient)
+                            .then(function(response) {
+                                var index = $scope.patients.findIndex(p => p.id === response.data.id);
+                                $scope.patients[index] = response.data;
+                                $scope.loading = false;
+                                $scope.closeEditModal();
+                            })
+                            .catch(function(error) {
+                                $scope.error = 'Error updating patient: ' + error.message;
+                                $scope.loading = false;
+                            });
+                    }
+                };
+
+                $scope.deletePatient = function(id) {
+                    if (confirm('Are you sure you want to delete this patient?')) {
+                        $scope.loading = true;
+                        $http.delete('/api/patients/' + id)
+                            .then(function() {
+                                $scope.patients = $scope.patients.filter(p => p.id !== id);
+                                $scope.loading = false;
+                            })
+                            .catch(function(error) {
+                                $scope.error = 'Error deleting patient: ' + error.message;
+                                $scope.loading = false;
+                            });
+                    }
+                };
+
+                $scope.openAddModal = function() {
+                    $scope.showAddModal = true;
+                };
+
+                $scope.closeAddModal = function() {
+                    $scope.showAddModal = false;
+                    $scope.newPatient = {};
+                };
+
+                $scope.openEditModal = function(patient) {
+                    $scope.editingPatient = angular.copy(patient);
+                    $scope.showEditModal = true;
+                };
+
+                $scope.closeEditModal = function() {
+                    $scope.showEditModal = false;
+                    $scope.editingPatient = {};
+                };
+
+                $scope.fetchPatients();
+            });
+    </script>
+</body>
+</html>
